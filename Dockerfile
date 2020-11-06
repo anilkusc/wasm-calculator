@@ -8,11 +8,10 @@ RUN GOARCH=wasm GOOS=js go build -o /bin/main.wasm main.go
 RUN CGO_ENABLED=0 go build -o /bin/server server.go
 FROM nginx
 WORKDIR /app
-RUN rm -fr /usr/share/nginx/html/*
-COPY --from=BUILD /bin/main.wasm /usr/share/nginx/html/
+COPY --from=BUILD /bin/main.wasm .
 COPY --from=BUILD /bin/server .
-COPY --from=BUILD /bin/wasm_exec.js /usr/share/nginx/html/
-COPY ./index.html /usr/share/nginx/html/
+COPY --from=BUILD /bin/wasm_exec.js .
+COPY ./index.html .
 COPY entrypoint.sh .
 COPY default.conf /etc/nginx/conf.d/default.conf
 RUN chmod 777 entrypoint.sh
