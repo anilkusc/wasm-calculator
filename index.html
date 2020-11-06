@@ -1,0 +1,53 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script src="wasm_exec.js"></script>
+  <script>
+    if (!WebAssembly.instantiateStreaming) {
+      // polyfill
+      WebAssembly.instantiateStreaming = async (resp, importObject) => {
+        const source = await (await resp).arrayBuffer();
+        return await WebAssembly.instantiate(source, importObject);
+      };
+    }
+
+    const go = new Go();
+    let mod, inst;
+    WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then(
+      async result => {
+        mod = result.module;
+        inst = result.instance;
+        await go.run(inst);
+      }
+    );
+  </script>
+</head>
+
+<body>
+  <!--Because of form structure it calls function 2 times if we doesn't write this javascript function-->
+  <form onsubmit="return mySubmitFunction(event)">
+    <label for="fname">First number:</label><br>
+    <input type="number" id="first"><br>
+    <label for="lname">Second number:</label><br>
+    <input type="number" id="second"><br><br>
+    <label for="cars">Operator:</label>
+    <select id="operator">
+      <option value="+">+</option>
+      <option value="-">-</option>
+      <option value="/">/</option>
+      <option value="*">*</option>
+    </select>
+    <button onClick="operate(first.value,second.value,operator.value)" value="submit" id="submit">Submit</button>
+  </form>
+  Result is: <b><span id="total">0</span></b>
+
+  <script>
+    //Because of form structure it calls function 2 times if we doesn't write this javascript function
+    function mySubmitFunction(e) {
+      e.preventDefault();
+    }
+  </script>
+</body>
+
+</html>
